@@ -1,66 +1,120 @@
-const PATTERN_lENGTH = 20;
+let simon = null;
 
-let createPattern = (mode) => {
-	  document.getElementById("gameMode").value = mode.id;
-  	document.getElementById("stepCount").innerHTML = "!!";
-  	document.getElementById("dashText").innerHTML = "New Game!";
-  	
-  	let textPattern = "";
-  	const possibleChars = "RGBY";
-
-  	let patternData = generateRandomPattern(textPattern,PATTERN_lENGTH,possibleChars);
-  	
-  	document.getElementById("pattern").value = patternData;
-  	showSteps();
+const addEventListeners = () => {
+  document.getElementById('Regular').addEventListener('click', startRegular);
+  document.getElementById('Strict').addEventListener('click', startStrict);
+  document.getElementById('B').addEventListener('click', clickedB);
+  document.getElementById('R').addEventListener('click', clickedR);
+  document.getElementById('G').addEventListener('click', clickedG);
+  document.getElementById('Y').addEventListener('click', clickedY);
 };
 
-let showSteps = (repeatation = "") => {
-  let pattern = document.getElementById("pattern").value; 
-  let steps = document.getElementById("stepCount").textContent;
-
-  let newStepValue = stepsUpdation(steps,repeatation);
-
-  document.getElementById("stepCount").innerHTML = newStepValue;
-  document.getElementById("dashText").innerHTML = "Remember the pattern shown!";
-  document.getElementById("lockStatus").value = "unlocked";
-  document.getElementById("userInput").value = "";
-  alert("Pattern: "+pattern.slice(0,newStepValue));
-};
-
-let appendClicks = (divisionId) => {
-  let lockStatus = document.getElementById("lockStatus").value;
-  let oldUserInputVal = document.getElementById("userInput").value;
-
-  let newUserInputVal = latestUserInput(oldUserInputVal,divisionId.id);
-  document.getElementById("userInput").value = newUserInputVal;
-
-  let noOfSteps = document.getElementById("stepCount").value;
-  let pattern = document.getElementById("pattern").value;
-  let rightPattern = pattern.slice(0,parseInt(newUserInputVal.length));
-
-  if(newUserInputVal != rightPattern) {
-      alert("Wrong slice clicked!!");
-      if(document.getElementById("gameMode").value == "Regular") {
-        showSteps("repeat");
-        return "Repeat Step!";
+let simonGameController = () => {
+  return new SimonGame(
+    (gameState) => {
+      if(gameState.gameMode === "strict") {
+        document.getElementById('gameMode').value = "strict";
+        document.getElementById('lockStatus').value = gameState.lockStatus;
       }
-      else {
+      if(gameState.gameMode === "regular") {
+        document.getElementById('gameMode').value = "regular";
+        document.getElementById('lockStatus').value = gameState.lockStatus;
+      }
+      if(gameState.newGame && gameState.generatedRandomPattern !== "") {
         document.getElementById("stepCount").innerHTML = "!!";
-        createPattern({"id":"Strict"});
-        return "New Game!";
+        document.getElementById("dashText").innerHTML = "New Game!";
+        document.getElementById("pattern").value = gameState.generatedRandomPattern;
+        document.getElementById("lockStatus").value = gameState.lockStatus;
       }
-    }
-
-    noOfSteps = document.getElementById("stepCount").textContent;
-    if(newUserInputVal.length == parseInt(noOfSteps)) {
-      if(newUserInputVal.length == 20) {
+      if(gameState.showPattern) {
+        document.getElementById("stepCount").innerHTML = gameState.steps;
+        document.getElementById("dashText").innerHTML = "Remember the pattern shown!";
+        document.getElementById("lockStatus").value = gameState.lockStatus;
+        document.getElementById("userInput").value = "";
+        alert("Pattern: "+gameState.currentPattern);
+      }
+      if(gameState.userInput) {
+        document.getElementById("userInput").value = gameState.userInput;
+        document.getElementById("lockStatus").value = gameState.lockStatus;
+      }
+      if(gameState.wrongClickByUser) {
+        document.getElementById("lockStatus").value = gameState.lockStatus;
+        alert("Wrong slice clicked!!");
+        if (gameState.gameMode === "strict") {
+          document.getElementById('stepCount').innerHTML = "!!";
+        }
+      }
+      if(gameState.playerWin) {
         alert("Congratulations! You Won!!");
         document.getElementById("dashText").innerHTML = "!!Winner!!";
-        document.getElementById("lockStatus").value = "locked";
+        document.getElementById("lockStatus").value = gameState.lockStatus;
         document.getElementById("stepCount").innerHTML = "!!";
       }
-      else {
-        showSteps();
+    }
+  );
+};
+
+simon = simonGameController();
+
+const startRegular = () => {
+  simon.startRegularMode();
+  initiateGame();
+};
+
+const startStrict = () => {
+  simon.startStrictMode();
+  initiateGame();
+};
+
+const initiateGame = () => {
+  simon.createPattern();
+  simon.showPattern();
+};
+
+const clickedB = () => {
+  simon.appendUserInput('B');
+  finishComputerMove();
+};
+
+const clickedR = () => {
+  simon.appendUserInput('R');
+  finishComputerMove();
+};
+
+const clickedG = () => {
+  simon.appendUserInput('G');
+  finishComputerMove();
+};
+
+const clickedY = () => {
+  simon.appendUserInput('Y');
+  finishComputerMove();
+};
+
+const finishComputerMove = () => {
+  simon.validateUserInput();
+  let gameState = simon.getGameState();
+  if(gameState.wrongClickByUser) {
+    //alert("inside wrong clicked");
+    if(gameState.gameMode === 'regular') {
+      simon.showPattern('repeat');
+    }
+    else {
+      simon.startStrictMode();
+      simon.createPattern();
+      simon.showPattern();
+    }
+  }
+  else { //User Input is correct
+    gameState = simon.getGameState();
+    if(gameState.userInput.length === gameState.steps) {
+      //alert(gameState.steps);
+      let gameWon = gameState.playerWin;
+      if(!gameWon) {
+        simon.showPattern();
       }
     }
+  }
 };
+
+addEventListeners();
