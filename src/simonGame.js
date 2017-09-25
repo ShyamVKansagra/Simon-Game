@@ -42,7 +42,6 @@ class SimonGame {
         for (let i = 0; i < PATTERN_lENGTH; i++) {
             textPattern += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
           }
-          //alert(textPattern);
         this.setGameState({generatedRandomPattern: textPattern, newGame: true, lockStatus: "unlocked"});  
       }
     };
@@ -54,7 +53,6 @@ class SimonGame {
         if(repeatation !== "repeat") {
           this.gameInfo.steps += 1; 
         }
-        //alert(this.gameInfo.steps);
         let slicedPattern = this.gameInfo.generatedRandomPattern.slice(0,this.gameInfo.steps);
         this.setGameState({currentPattern: slicedPattern, showPattern: true, lockStatus: "unlocked", steps: this.gameInfo.steps, userInput: "", newGame: false, wrongClickByUser: false});
       }
@@ -64,19 +62,16 @@ class SimonGame {
       let lockValue = this.gameInfo.lockStatus;
       if(lockValue === "unlocked") {
         let latestUserInput = this.gameInfo.userInput+clickedSlice;
-        //alert("latestUserInput"+latestUserInput);
         this.setGameState({lockStatus: "unlocked",userInput: latestUserInput,showPattern: false, newGame: false});
       }
     };
 
     this.validateUserInput = () => {
       const patternToMatch = this.gameInfo.generatedRandomPattern.slice(0,this.gameInfo.userInput.length);
-      //alert(this.gameInfo.userInput);
       if(this.gameInfo.userInput !== patternToMatch) {
         this.setGameState({wrongClickByUser: true, lockStatus: "unlocked", gameMode: this.gameInfo.gameMode, showPattern: false});
       }
       else {
-        //this.setGameState({lockStatus: "unlocked"});
         if(!this.gameInfo.playerWin) {
           this.checkForWinningState();
         }
