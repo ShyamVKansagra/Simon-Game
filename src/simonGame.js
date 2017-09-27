@@ -2,7 +2,7 @@ class SimonGame {
   constructor(
     renderFunction = console.log
   ) {
-    this.gameState = {
+    const initialState = {
       playerWin: false,
       newGame: false,
       lockStatus: "locked", //possible values 'locked' and 'unlocked'
@@ -15,15 +15,15 @@ class SimonGame {
       steps: 0
     };
 
-    this.gameInfo = this.gameState;
+    let gameState = initialState;
 
-    this.setGameState = (gameInfo) => {
-      this.gameInfo = Object.assign({},this.gameInfo,gameInfo);
-      renderFunction(this.gameInfo);
+    this.setState = (newGameState) => {
+      gameState = Object.assign({}, gameState, newGameState);
+      renderFunction(gameState);
     };
 
     this.startGame = (gameMode) => {
-      this.gameInfo = {
+      gameState = {
         playerWin: false,
         newGame: true,
         lockStatus: "unlocked",
@@ -45,18 +45,20 @@ class SimonGame {
         let textPattern = "";
 
         for (let i = 0; i < PATTERN_lENGTH; i++) {
-            textPattern += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
-          }
-          return textPattern;
+          textPattern += possibleChars.charAt(Math.floor(Math.random() * possibleChars.length));
+        }
+        return textPattern;
     };
 
-    const showPattern = (repeatation = "") => {
-      if (this.gameInfo.lockStatus === "unlocked") {
-        if (repeatation !== "repeat") {
-          this.gameInfo.steps += 1; 
+    const showPattern = (repetition = "") => {
+      if (gameState.lockStatus === "unlocked") {
+        if (repetition !== "repeat") {
+          gameState.steps += 1; 
         }
-        let slicedPattern = this.gameInfo.generatedRandomPattern.slice(0,this.gameInfo.steps);
-        this.setGameState({
+
+        const slicedPattern = gameState.generatedRandomPattern.slice(0, gameState.steps);
+        
+        this.setState({
           currentPattern: slicedPattern, 
           showPattern: true, 
           userInput: "", 
@@ -65,33 +67,33 @@ class SimonGame {
     };
 
     this.processUserInput = (sliceColor) => {
-      if (this.gameInfo.lockStatus === "unlocked") {
-        const latestUserInput = this.gameInfo.userInput+sliceColor;
-        this.gameInfo.userInput = latestUserInput;
-        this.gameInfo.showPattern = false;
-        this.gameInfo.newGame = false;
+      if (gameState.lockStatus === "unlocked") {
+        const latestUserInput = gameState.userInput+sliceColor;
+        gameState.userInput = latestUserInput;
+        gameState.showPattern = false;
+        gameState.newGame = false;
       }
       validateUserInput();
     };
 
     const validateUserInput = () => {
-      const patternToMatch = this.gameInfo.generatedRandomPattern.slice(0,this.gameInfo.userInput.length);
-      if (this.gameInfo.userInput !== patternToMatch) {
-        this.setGameState({
+      const patternToMatch = gameState.generatedRandomPattern.slice(0, gameState.userInput.length);
+      if (gameState.userInput !== patternToMatch) {
+        this.setState({
           wrongClickByUser: true, 
         });
       } else {  //correct input, so check for win
-          if (!this.gameInfo.playerWin && this.gameInfo.userInput.length === 20) {
-            this.setGameState({playerWin: true, lockStatus: "locked"});
+          if (!gameState.playerWin && gameState.userInput.length === 20) {
+            this.setState({ playerWin: true, lockStatus: "locked" });
           } else {
-            this.gameInfo.userInput.length === this.gameInfo.steps && showPattern();
+            gameState.userInput.length === gameState.steps && showPattern();
           }
       }
     };
 
     this.resetGame = () => {
-      this.gameInfo.wrongClickByUser = false;
-      if (this.gameInfo.gameMode === 'regular') {
+      gameState.wrongClickByUser = false;
+      if (gameState.gameMode === 'regular') {
         showPattern('repeat');
       } else {
         this.startGame('strict');
